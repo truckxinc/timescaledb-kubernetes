@@ -17,9 +17,9 @@ image:
 # Credentials used by PostgreSQL
 credentials:
   accessNode:
-    superuser: tea
+    superuser: truckx
   dataNode:
-    superuser: coffee
+    superuser: truckx
 
 # Extra custom environment variables.
 # These should be an EnvVar, as this allows you to inject secrets into the environment
@@ -45,7 +45,7 @@ persistentVolume:
   ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
   ##   GKE, AWS & OpenStack)
   ##
-  # storageClass: "-"
+  storageClass: sc-pd-ssd
   subPath: ""
   mountPath: "/var/lib/postgresql"
   annotations: {}

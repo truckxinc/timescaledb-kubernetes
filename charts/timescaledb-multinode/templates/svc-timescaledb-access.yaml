@@ -22,4 +22,4 @@ spec:
   selector:
     app: {{ template "timescaledb.fullname" . }}
     timescaleNodeType: access
-...
+

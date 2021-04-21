@@ -18,6 +18,7 @@ spec:
       app: {{ template "timescaledb.fullname" . }}
       release: {{ .Release.Name }}
       timescaleNodeType: access
+      appGroup: timescale
   template:
     metadata:
       name: {{ template "timescaledb.accessname" . }}
@@ -25,6 +26,7 @@ spec:
         app: {{ template "timescaledb.fullname" . }}
         release: {{ .Release.Name }}
         timescaleNodeType: access
+        appGroup: timescale
     spec:
       serviceAccountName: {{ template "timescaledb.serviceAccountName" . }}
       securityContext:
@@ -85,7 +87,13 @@ spec:
         command:
           - sh
           - '-c'
-          - exec env -i PGDATA="${PGDATA}" PATH="${PATH}" /docker-entrypoint.sh postgres
+          - exec env -i PGDATA="${PGDATA}" PATH="${PATH}"  /docker-entrypoint.sh postgres 
+            #-c wal_level=archive \
+            #-c archive_mode=on \
+            #-c archive_command="/usr/bin/wget wale/wal-push/%f -O -" \
+            #-c archive_timeout=600 \
+            #-c checkpoint_timeout=700 \
+            #-c max_wal_senders=1 \
         env:
         - name: POD_NAMESPACE
           valueFrom:
@@ -103,6 +111,36 @@ spec:
           subPath: "{{ .Values.persistentVolume.subPath }}"
         resources:
 {{ toYaml .Values.resources | indent 10 }}
+           {{- if .Values.configureBackup }}
+      - name: timescaledb-wale
+        image: timescale/timescaledb-wale:latest
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        env:
+        - name: WALE_LOG_DESTINATION
+          value: stderr
+        - name: PGHOST
+          value: localhost
+        - name: PGPASSWORD
+          value: "{{ .Values.credentials.accessNode.superuser }}"
+        - name: PGUSER
+          value: postgres
+        - name: WALE_S3_PREFIX
+          value: s3://truckx-timescale-backup/
+        - name: AWS_ACCESS_KEY_ID
+          value: AKIA43DKKALOPRPCNHI7
+        - name: AWS_SECRET_ACCESS_KEY
+          value: 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
+        - name: AWS_REGION
+          value: us-west-2
+          {{- if .Values.env }}
+{{ .Values.env | default list | toYaml | indent 8 }}
+          {{- end }}
+
+        volumeMounts:
+        - name: storage-volume
+          mountPath: "{{ .Values.persistentVolume.mountPath }}"
+          subPath: "{{ .Values.persistentVolume.subPath }}"
+          {{- end }}
     {{- with .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
