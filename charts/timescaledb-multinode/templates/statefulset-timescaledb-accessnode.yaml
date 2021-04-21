@@ -127,9 +127,9 @@ spec:
         - name: WALE_S3_PREFIX
           value: s3://truckx-timescale-backup/
         - name: AWS_ACCESS_KEY_ID
-          value: AKIA43DKKALOPRPCNHI7
+          value: _AWS_ACCESS_KEY_ID_
         - name: AWS_SECRET_ACCESS_KEY
-          value: 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
+          value: _AWS_SECRET_ACCESS_KEY_
         - name: AWS_REGION
           value: us-west-2
           {{- if .Values.env }}
