@@ -33,7 +33,7 @@ spec:
         - services/timescaledb_writer.py
         env:
         - name: NEW_RELIC_LICENSE_KEY
-          value: 852017ee6e9435ee619200dd3bb85e3462faNRAL
+          value: <NEW_RELIC_LICENSE_KEY>
         - name: NEW_RELIC_APP_NAME
           value: {{ template "timescaledb.writername" . }}
         - name: NEW_RELIC_LOG
@@ -43,7 +43,6 @@ spec:
         - name: NEW_RELIC_DISTRIBUTED_TRACING_ENABLED
           value: "True"
         - name: TIMESCALEDB_URL
-          #value: postgres://postgres:eC4Fyz52vrJ7I78X@104.198.196.178:5432/truckx-tsdb
           value: postgres://postgres:{{ .Values.credentials.accessNode.superuser }}@{{ template "timescaledb.fullname" . }}:5432/truckx-tsdb
         #- name: REDIS_URL
         #  value: 10.175.246.75
