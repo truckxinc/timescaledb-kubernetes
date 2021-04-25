@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "timescaledb.writername" . }}
+  labels:
+    app: {{ template "timescaledb.fullname" . }}
+    chart: {{ template "timescaledb.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: {{ template "timescaledb.fullname" . }}
+      release: {{ .Release.Name }}
+      timescaleNodeType: writer
+      appGroup: timescale
+  template:
+    metadata:
+      name: {{ template "timescaledb.writername" . }}
+      labels:
+        app: {{ template "timescaledb.fullname" . }}
+        release: {{ .Release.Name }}
+        timescaleNodeType: writer
+        appGroup: timescale
+    spec:
+      containers:
+      - name: timescalesb-writer
+        command:
+        - newrelic-admin
+        args:
+        - run-python
+        - services/timescaledb_writer.py
+        env:
+        - name: NEW_RELIC_LICENSE_KEY
+          value: 852017ee6e9435ee619200dd3bb85e3462faNRAL
+        - name: NEW_RELIC_APP_NAME
+          value: {{ template "timescaledb.writername" . }}
+        - name: NEW_RELIC_LOG
+          value: stdout
+        - name: NEW_RELIC_NO_CONFIG_FILE
+          value: "True"
+        - name: NEW_RELIC_DISTRIBUTED_TRACING_ENABLED
+          value: "True"
+        - name: TIMESCALEDB_URL
+          #value: postgres://postgres:eC4Fyz52vrJ7I78X@104.198.196.178:5432/truckx-tsdb
+          value: postgres://postgres:{{ .Values.credentials.accessNode.superuser }}@{{ template "timescaledb.fullname" . }}:5432/truckx-tsdb
+        #- name: REDIS_URL
+        #  value: 10.175.246.75
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: {{ .Values.credentials.gcp.appCreds }}
+        - name: GCP_PROJECT_ID
+          value: {{ .Values.credentials.gcp.projectId }}
+        - name: GCP_PUBSUB_TIMESCALEDB_SUBSCRIPTION_ID
+          value: {{ template "timescaledb.fullname" . }}-sub
+        - name: ENABLE_REDIS
+          value: "False"
+        - name: DB_ASYNC_WRITE
+          value: "False"
+        image: "{{ .Values.iotImage.repository }}:{{ .Values.iotImage.tag }}"
+        imagePullPolicy: {{ .Values.iotImage.pullPolicy }}
